@@ -1,4 +1,4 @@
-const ErrorHander = require("../utils/errorhander");
+
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const User = require("../models/userModel");
 const sendToken = require("../utils/jwtToken");
@@ -45,21 +45,13 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
 
   // checking if user has given password and email both
 
-  if (!email || !password) {
-    return next(new ErrorHander("Please Enter Email & Password", 400));
-  }
+  
 
   const user = await User.findOne({ email }).select("+password");
 
-  if (!user) {
-    return next(new ErrorHander("Invalid email or password", 401));
-  }
 
   const isPasswordMatched = await user.comparePassword(password);
 
-  if (!isPasswordMatched) {
-    return next(new ErrorHander("Invalid email or password", 401));
-  }
 
   sendToken(user, 200, res);
 });
@@ -81,9 +73,7 @@ exports.logout = catchAsyncErrors(async (req, res, next) => {
 exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
 
-  if (!user) {
-    return next(new ErrorHander("User not found", 404));
-  }
+  
 
   // Get ResetPassword Token
   const resetToken = user.getResetPasswordToken();
@@ -111,7 +101,6 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
 
     await user.save({ validateBeforeSave: false });
 
-    return next(new ErrorHander(error.message, 500));
   }
 });
 
@@ -128,18 +117,7 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
     resetPasswordExpire: { $gt: Date.now() },
   });
 
-  if (!user) {
-    return next(
-      new ErrorHander(
-        "Reset Password Token is invalid or has been expired",
-        400
-      )
-    );
-  }
 
-  if (req.body.password !== req.body.confirmPassword) {
-    return next(new ErrorHander("Password does not password", 400));
-  }
 
   user.password = req.body.password;
   user.resetPasswordToken = undefined;
@@ -166,13 +144,6 @@ exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
 
   const isPasswordMatched = await user.comparePassword(req.body.oldPassword);
 
-  if (!isPasswordMatched) {
-    return next(new ErrorHander("Old password is incorrect", 400));
-  }
-
-  if (req.body.newPassword !== req.body.confirmPassword) {
-    return next(new ErrorHander("password does not match", 400));
-  }
 
   user.password = req.body.newPassword;
 
@@ -197,11 +168,6 @@ exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
 exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.params.id);
 
-  if (!user) {
-    return next(
-      new ErrorHander(`User does not exist with Id: ${req.params.id}`)
-    );
-  }
 
   res.status(200).json({
     success: true,
@@ -232,11 +198,6 @@ exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
 exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.params.id);
 
-  if (!user) {
-    return next(
-      new ErrorHander(`User does not exist with Id: ${req.params.id}`, 400)
-    );
-  }
 
   const imageId = user.avatar.public_id;
 

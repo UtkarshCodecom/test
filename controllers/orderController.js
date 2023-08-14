@@ -1,6 +1,5 @@
 const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
-const ErrorHander = require("../utils/errorhander");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 
 // Create new Order
@@ -40,9 +39,7 @@ exports.getSingleOrder = catchAsyncErrors(async (req, res, next) => {
     "name email"
   );
 
-  if (!order) {
-    return next(new ErrorHander("Order not found with this Id", 404));
-  }
+  
 
   res.status(200).json({
     success: true,
@@ -81,13 +78,6 @@ exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
 exports.updateOrder = catchAsyncErrors(async (req, res, next) => {
   const order = await Order.findById(req.params.id);
 
-  if (!order) {
-    return next(new ErrorHander("Order not found with this Id", 404));
-  }
-
-  if (order.orderStatus === "Delivered") {
-    return next(new ErrorHander("You have already delivered this order", 400));
-  }
 
   if (req.body.status === "Shipped") {
     order.orderItems.forEach(async (o) => {
@@ -117,10 +107,6 @@ async function updateStock(id, quantity) {
 // delete Order -- Admin
 exports.deleteOrder = catchAsyncErrors(async (req, res, next) => {
   const order = await Order.findById(req.params.id);
-
-  if (!order) {
-    return next(new ErrorHander("Order not found with this Id", 404));
-  }
 
   await order.remove();
 

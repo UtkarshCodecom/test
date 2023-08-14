@@ -1,5 +1,4 @@
 const Product = require("../models/productModel");
-const ErrorHander = require("../utils/errorHander.js");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const ApiFeatures = require("../utils/apiFeatures");
 const cloudinary = require("cloudinary");
@@ -47,9 +46,6 @@ exports.getAdminProducts = catchAsyncErrors(async (req, res, next) => {
 exports.getProductDetails = catchAsyncErrors(async (req, res, next) => {
   const product = await Product.findById(req.params.id);
 
-  if (!product) {
-    return next(new ErrorHander("product not found", 404));
-  }
 
   res.status(200).json({
     success: true,
@@ -70,11 +66,6 @@ exports.discountProduct = catchAsyncErrors(async (req, res, next) => {
 exports.updateProduct = catchAsyncErrors(async (req, res, next) => {
   
   let product = await Product.findById(req.params.id);
-
-  if (!product) {
-    return next(new ErrorHander("product not found", 404));
-  }
-
   product = await Product.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
@@ -92,9 +83,6 @@ exports.updateProduct = catchAsyncErrors(async (req, res, next) => {
 exports.deleteProduct = catchAsyncErrors(async (req, res, next) => {
   const product = await Product.findById(req.params.id);
 
-  if (!product) {
-    return next(new ErrorHander("product not found", 404));
-  }
 
   await product.remove();
 
@@ -151,9 +139,6 @@ exports.createProductReview = catchAsyncErrors(async (req, res, next) => {
 exports.getProductReviews = catchAsyncErrors(async (req, res, next) => {
   const product = await Product.findById(req.query.id);
 
-  if (!product) {
-    return next(new ErrorHander("Product not found", 404));
-  }
 
   res.status(200).json({
     success: true,
@@ -166,9 +151,6 @@ exports.getProductReviews = catchAsyncErrors(async (req, res, next) => {
 exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
   const product = await Product.findById(req.query.productId);
 
-  if (!product) {
-    return next(new ErrorHander("Product not found", 404));
-  }
 
   const review = product.reviews.filter(
     (rev) => rev.id.toString() !== req.query.id.toString()
